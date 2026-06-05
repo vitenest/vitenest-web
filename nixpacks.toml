@@ -1,2 +1,14 @@
-[variables]
-NIXPACKS_STATIC_OUT_DIR = "dist"
+[providers]
+  node = true
+
+[phases.setup]
+  nixPkgs = ["nodejs"]
+
+[phases.install]
+  cmds = ["npm ci"]
+
+[phases.build]
+  cmds = ["npm run build"]
+
+[start]
+  cmd = "npm run start"
