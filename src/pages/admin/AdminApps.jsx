@@ -19,6 +19,9 @@ export default function AdminApps({ section }) {
     icon: ''
   });
   const [isCreating, setIsCreating] = useState(false);
+  const [showNewCatForm, setShowNewCatForm] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [isCreatingCat, setIsCreatingCat] = useState(false);
 
   // Reset form section when section prop changes
   useEffect(() => {
@@ -98,6 +101,29 @@ export default function AdminApps({ section }) {
       setError(err.message);
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleCreateInlineCategory = async () => {
+    if (!newCatName.trim()) return;
+    setIsCreatingCat(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ name: newCatName.trim(), section: newApp.section })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      setCategories(prev => [...prev, data]);
+      setNewApp(prev => ({ ...prev, categoryId: data.id }));
+      setNewCatName('');
+      setShowNewCatForm(false);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsCreatingCat(false);
     }
   };
 
@@ -253,16 +279,54 @@ export default function AdminApps({ section }) {
 
                 <div className={styles.formGroup} style={{ flex: 1 }}>
                   <label className={styles.formLabel}>Category</label>
-                  <select
-                    className={styles.formInput}
-                    value={newApp.categoryId}
-                    onChange={(e) => setNewApp({...newApp, categoryId: e.target.value})}
-                  >
-                    <option value="">Select Category...</option>
-                    {availableCategories.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                  {showNewCatForm ? (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        className={styles.formInput}
+                        value={newCatName}
+                        onChange={(e) => setNewCatName(e.target.value)}
+                        placeholder="Category name..."
+                        autoFocus
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateInlineCategory(); } }}
+                      />
+                      <button
+                        type="button"
+                        className={styles.saveBtn}
+                        onClick={handleCreateInlineCategory}
+                        disabled={isCreatingCat || !newCatName.trim()}
+                        style={{ whiteSpace: 'nowrap', padding: '10px 14px' }}
+                      >
+                        {isCreatingCat ? '...' : 'Add'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowNewCatForm(false); setNewCatName(''); }}
+                        style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '8px' }}
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                  ) : (
+                    <select
+                      className={styles.formInput}
+                      value={newApp.categoryId}
+                      onChange={(e) => {
+                        if (e.target.value === '__create__') {
+                          setShowNewCatForm(true);
+                          setNewApp({...newApp, categoryId: ''});
+                        } else {
+                          setNewApp({...newApp, categoryId: e.target.value});
+                        }
+                      }}
+                    >
+                      <option value="">Select Category...</option>
+                      {availableCategories.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                      <option value="__create__">＋ Create new category...</option>
+                    </select>
+                  )}
                 </div>
               </div>
 
