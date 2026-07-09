@@ -1,4 +1,0 @@
-providers = ["node"]
-
-[start]
-cmd = "npm run start"
