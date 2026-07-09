@@ -12,6 +12,7 @@ import Contact from './pages/Contact';
 import Support from './pages/Support';
 import Advertise from './pages/Advertise';
 import Legal from './pages/Legal';
+import LegalPage from './pages/LegalPage';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
@@ -52,6 +53,7 @@ function App() {
           <Route path="/privacy" element={<Legal title="Privacy Policy" />} />
           <Route path="/terms" element={<Legal title="Terms of Service" />} />
           <Route path="/disclaimer" element={<Legal title="Disclaimer" />} />
+          <Route path="/legal/:appSlug/:docSlug" element={<LegalPage />} />
 
           {/* Admin Routes — no Navbar/Footer */}
           <Route path="/admin/login" element={<AdminLogin />} />

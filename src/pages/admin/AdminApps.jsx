@@ -16,7 +16,11 @@ export default function AdminApps({ section }) {
     categoryId: '',
     isFeatured: false,
     link: '',
-    icon: ''
+    icon: '',
+    appSlug: '',
+    hasLegal: false,
+    termsOfService: { title: 'Terms of Service', slug: 'terms', headline: '', content: '' },
+    privacyPolicy: { title: 'Privacy Policy', slug: 'privacy', headline: '', content: '' }
   });
   const [isCreating, setIsCreating] = useState(false);
   const [showNewCatForm, setShowNewCatForm] = useState(false);
@@ -79,6 +83,12 @@ export default function AdminApps({ section }) {
     setIsCreating(true);
     setError('');
 
+    // Generate appSlug if not provided but hasLegal is true
+    let payload = { ...newApp };
+    if (payload.hasLegal && !payload.appSlug) {
+      payload.appSlug = payload.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    }
+
     try {
       const token = localStorage.getItem('adminToken');
       const res = await fetch('/api/admin/apps', {
@@ -87,7 +97,7 @@ export default function AdminApps({ section }) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}` 
         },
-        body: JSON.stringify(newApp)
+        body: JSON.stringify(payload)
       });
       
       const data = await res.json();
@@ -399,6 +409,84 @@ export default function AdminApps({ section }) {
                 <label htmlFor="featuredCheck" className={styles.formLabel} style={{ marginBottom: 0, cursor: 'pointer' }}>
                   Feature on Homepage
                 </label>
+              </div>
+
+              {/* Legal Pages Section */}
+              <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: newApp.hasLegal ? '16px' : '0' }}>
+                  <input
+                    type="checkbox"
+                    id="legalCheck"
+                    checked={newApp.hasLegal}
+                    onChange={(e) => setNewApp({...newApp, hasLegal: e.target.checked})}
+                    style={{ width: '18px', height: '18px' }}
+                  />
+                  <label htmlFor="legalCheck" className={styles.formLabel} style={{ marginBottom: 0, cursor: 'pointer', fontSize: '1rem', color: '#fff' }}>
+                    Enable Legal Pages (ToS & Privacy)
+                  </label>
+                </div>
+
+                {newApp.hasLegal && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div className={styles.formGroup} style={{ marginBottom: '8px' }}>
+                      <label className={styles.formLabel}>App Slug (Used in URL)</label>
+                      <input
+                        type="text"
+                        className={styles.formInput}
+                        value={newApp.appSlug}
+                        onChange={(e) => setNewApp({...newApp, appSlug: e.target.value})}
+                        placeholder="e.g. my-awesome-app"
+                        required={newApp.hasLegal}
+                      />
+                    </div>
+
+                    {/* Terms of Service */}
+                    <div style={{ padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+                      <h4 style={{ marginBottom: '12px', color: '#cbd5e1' }}>Terms of Service</h4>
+                      <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                        <div style={{ flex: 1 }}>
+                          <label className={styles.formLabel}>Title</label>
+                          <input type="text" className={styles.formInput} value={newApp.termsOfService?.title} onChange={e => setNewApp({...newApp, termsOfService: {...newApp.termsOfService, title: e.target.value}})} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label className={styles.formLabel}>Slug</label>
+                          <input type="text" className={styles.formInput} value={newApp.termsOfService?.slug} onChange={e => setNewApp({...newApp, termsOfService: {...newApp.termsOfService, slug: e.target.value}})} />
+                        </div>
+                      </div>
+                      <div className={styles.formGroup} style={{ marginBottom: '12px' }}>
+                        <label className={styles.formLabel}>Headline</label>
+                        <input type="text" className={styles.formInput} value={newApp.termsOfService?.headline} onChange={e => setNewApp({...newApp, termsOfService: {...newApp.termsOfService, headline: e.target.value}})} />
+                      </div>
+                      <div className={styles.formGroup} style={{ marginBottom: '0' }}>
+                        <label className={styles.formLabel}>Content</label>
+                        <textarea className={styles.formInput} rows="4" value={newApp.termsOfService?.content} onChange={e => setNewApp({...newApp, termsOfService: {...newApp.termsOfService, content: e.target.value}})} />
+                      </div>
+                    </div>
+
+                    {/* Privacy Policy */}
+                    <div style={{ padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+                      <h4 style={{ marginBottom: '12px', color: '#cbd5e1' }}>Privacy Policy</h4>
+                      <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                        <div style={{ flex: 1 }}>
+                          <label className={styles.formLabel}>Title</label>
+                          <input type="text" className={styles.formInput} value={newApp.privacyPolicy?.title} onChange={e => setNewApp({...newApp, privacyPolicy: {...newApp.privacyPolicy, title: e.target.value}})} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label className={styles.formLabel}>Slug</label>
+                          <input type="text" className={styles.formInput} value={newApp.privacyPolicy?.slug} onChange={e => setNewApp({...newApp, privacyPolicy: {...newApp.privacyPolicy, slug: e.target.value}})} />
+                        </div>
+                      </div>
+                      <div className={styles.formGroup} style={{ marginBottom: '12px' }}>
+                        <label className={styles.formLabel}>Headline</label>
+                        <input type="text" className={styles.formInput} value={newApp.privacyPolicy?.headline} onChange={e => setNewApp({...newApp, privacyPolicy: {...newApp.privacyPolicy, headline: e.target.value}})} />
+                      </div>
+                      <div className={styles.formGroup} style={{ marginBottom: '0' }}>
+                        <label className={styles.formLabel}>Content</label>
+                        <textarea className={styles.formInput} rows="4" value={newApp.privacyPolicy?.content} onChange={e => setNewApp({...newApp, privacyPolicy: {...newApp.privacyPolicy, content: e.target.value}})} />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className={styles.modalActions}>
