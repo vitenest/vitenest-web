@@ -11,8 +11,7 @@ const PORT = process.env.PORT || 3000;
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Handle React Router SPA routing: send all requests to index.html
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
