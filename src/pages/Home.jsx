@@ -15,25 +15,30 @@ export default function Home() {
   const [featuredApps, setFeaturedApps] = useState([]);
   const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
 
-  useEffect(() => {
-    fetch('/api/apps?featured=true')
-      .then(res => res.json())
-      .then(data => {
-        setFeaturedApps(data);
-        setIsLoadingFeatured(false);
-      })
-      .catch(err => {
-        console.error('Failed to fetch featured apps:', err);
-        setIsLoadingFeatured(false);
-      });
-  }, []);
+  const [categories, setCategories] = useState([]);
 
-  const categories = [
-    { name: 'Productivity', count: 12 },
-    { name: 'Developer Tools', count: 24 },
-    { name: 'AI Utilities', count: 8 },
-    { name: 'Media Editors', count: 15 },
-  ];
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/apps').then(res => res.json()),
+      fetch('/api/categories').then(res => res.json())
+    ])
+    .then(([appsData, catsData]) => {
+      setFeaturedApps(appsData.filter(app => app.isFeatured));
+      
+      // Calculate category counts
+      const catsWithCounts = catsData.map(cat => ({
+        ...cat,
+        count: appsData.filter(app => app.categoryId === cat.id).length
+      }));
+      setCategories(catsWithCounts);
+      
+      setIsLoadingFeatured(false);
+    })
+    .catch(err => {
+      console.error('Failed to fetch data:', err);
+      setIsLoadingFeatured(false);
+    });
+  }, []);
 
   const faqs = [
     { q: 'Is it really 100% free?', a: 'Yes! Our platform is supported by non-intrusive ads, allowing us to offer premium tools at zero cost to you.' },
