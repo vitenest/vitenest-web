@@ -196,6 +196,22 @@
   font-size: 2rem;
 }
 
+.btnPrimary {
+  padding: 10px 20px;
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -10px rgba(124, 58, 237, 0.5);
+}
+
 /* Dashboard Cards */
 .statsGrid {
   display: grid;
