@@ -9,10 +9,11 @@
   <body>
     <script>
       window.addEventListener('error', function(e) {
-        document.body.innerHTML += '<div style="color:red;font-size:20px;padding:20px;z-index:9999;position:fixed;top:0;left:0;background:white;">Error: ' + e.message + '<br>' + e.filename + ':' + e.lineno + '</div>';
-      });
+        var msg = e.message || (e.target && e.target.src ? 'Failed to load: ' + e.target.src : 'Unknown error');
+        document.body.innerHTML += '<div style="color:red;font-size:20px;padding:20px;z-index:9999;position:fixed;top:0;left:0;background:white;">Error: ' + msg + '</div>';
+      }, true);
       window.addEventListener('unhandledrejection', function(e) {
-        document.body.innerHTML += '<div style="color:red;font-size:20px;padding:20px;z-index:9999;position:fixed;top:0;left:0;background:white;">Unhandled Promise: ' + e.reason + '</div>';
+        document.body.innerHTML += '<div style="color:red;font-size:20px;padding:20px;z-index:9999;position:fixed;top:0;left:0;background:white;">Unhandled Promise: ' + (e.reason ? e.reason.toString() : 'Unknown rejection') + '</div>';
       });
     </script>
     <div id="root"></div>
