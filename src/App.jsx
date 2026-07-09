@@ -13,6 +13,12 @@ import Support from './pages/Support';
 import Advertise from './pages/Advertise';
 import Legal from './pages/Legal';
 
+// Admin Pages
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+
 function App() {
   return (
     <Router>
@@ -31,6 +37,13 @@ function App() {
         <Route path="/privacy" element={<Legal title="Privacy Policy" />} />
         <Route path="/terms" element={<Legal title="Terms of Service" />} />
         <Route path="/disclaimer" element={<Legal title="Disclaimer" />} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+        </Route>
       </Routes>
       <Footer />
     </Router>
