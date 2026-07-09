@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { LayoutDashboard, Users, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Shield, Grid, Package } from 'lucide-react';
 import styles from './Admin.module.css';
 
 export default function AdminLayout() {
@@ -60,11 +60,25 @@ export default function AdminLayout() {
             Dashboard
           </Link>
           <Link 
+            to="/admin/apps" 
+            className={`${styles.navItem} ${currentPath === '/admin/apps' ? styles.active : ''}`}
+          >
+            <Package size={20} />
+            Apps & Websites
+          </Link>
+          <Link 
+            to="/admin/categories" 
+            className={`${styles.navItem} ${currentPath === '/admin/categories' ? styles.active : ''}`}
+          >
+            <Grid size={20} />
+            Categories
+          </Link>
+          <Link 
             to="/admin/users" 
             className={`${styles.navItem} ${currentPath === '/admin/users' ? styles.active : ''}`}
           >
             <Users size={20} />
-            Users
+            Admin Users
           </Link>
         </nav>
 

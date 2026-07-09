@@ -18,6 +18,8 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
+import AdminApps from './pages/admin/AdminApps';
+import AdminCategories from './pages/admin/AdminCategories';
 
 function App() {
   return (
@@ -42,6 +44,8 @@ function App() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
+          <Route path="apps" element={<AdminApps />} />
+          <Route path="categories" element={<AdminCategories />} />
           <Route path="users" element={<AdminUsers />} />
         </Route>
       </Routes>

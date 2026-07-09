@@ -1,14 +1,32 @@
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Search, Users, Grid, Zap, MessageSquare, ArrowRight, Star, Heart, FileText, Code, CheckCircle, ChevronDown, Mail } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
+import { Search, Users, Grid, Zap, MessageSquare, Star, Heart, CheckCircle, ChevronDown } from 'lucide-react';
 import styles from './Home.module.css';
 
+// Helper to render dynamic icon from string
+const DynamicIcon = ({ name, size = 24, className }) => {
+  const IconComponent = LucideIcons[name] || LucideIcons['FileText']; // Fallback
+  return <IconComponent size={size} className={className} />;
+};
+
 export default function Home() {
-  const featuredTools = [
-    { name: 'VitePDF', desc: 'Compress, merge, and split PDFs entirely in your browser.', icon: <FileText size={24}/>, users: '12k' },
-    { name: 'JsonFormatter', desc: 'Beautify and validate JSON data instantly.', icon: <Code size={24}/>, users: '45k' },
-    { name: 'AI Resume Builder', desc: 'Generate professional resumes tailored to job descriptions.', icon: <Zap size={24}/>, users: '8k' },
-  ];
+  const [featuredApps, setFeaturedApps] = useState([]);
+  const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/apps?featured=true')
+      .then(res => res.json())
+      .then(data => {
+        setFeaturedApps(data);
+        setIsLoadingFeatured(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch featured apps:', err);
+        setIsLoadingFeatured(false);
+      });
+  }, []);
 
   const categories = [
     { name: 'Productivity', count: 12 },
@@ -94,19 +112,40 @@ export default function Home() {
               <h2>Top Rated Tools</h2>
               <p>Discover the most popular utilities currently used by our community.</p>
             </div>
-            <div className={styles.productGrid}>
-              {featuredTools.map((tool, i) => (
-                <div key={i} className={`glass-panel ${styles.toolCard}`}>
-                  <div className={styles.toolIconWrapper}>{tool.icon}</div>
-                  <h3>{tool.name}</h3>
-                  <p>{tool.desc}</p>
-                  <div className={styles.toolFooter}>
-                    <span className={styles.toolUsers}><Users size={14}/> {tool.users} users</span>
-                    <button className={styles.launchBtn}>Launch</button>
+            
+            {isLoadingFeatured ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>Loading featured apps...</div>
+            ) : featuredApps.length > 0 ? (
+              <div className={styles.productGrid}>
+                {featuredApps.map((app) => (
+                  <div key={app.id} className={`glass-panel ${styles.toolCard}`}>
+                    <div className={styles.toolIconWrapper}>
+                      {app.icon && app.icon.startsWith('http') ? (
+                        <img src={app.icon} alt={app.name} style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
+                      ) : (
+                        <DynamicIcon name={app.icon} size={24} />
+                      )}
+                    </div>
+                    <h3>{app.name}</h3>
+                    <p style={{ height: '48px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {app.description}
+                    </p>
+                    <div className={styles.toolFooter}>
+                      <span className={styles.toolUsers} style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)' }}>
+                        {app.section}
+                      </span>
+                      <a href={app.link} target="_blank" rel="noreferrer" className={styles.launchBtn} style={{ textDecoration: 'none', display: 'inline-block' }}>
+                        Launch
+                      </a>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
+                No featured tools yet. Add some from the admin panel!
+              </div>
+            )}
           </div>
         </section>
 
