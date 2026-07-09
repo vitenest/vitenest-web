@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import fs from 'fs';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -58,31 +59,35 @@ const users = [
   },
 ];
 
-// Ensure uploads directory exists
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+// ── Cloudflare R2 Setup ─────────────────────────────────────────────────────
+const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || '';
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '';
+const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || '';
+const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, ''); // e.g. https://pub-xxx.r2.dev
 
-// Multer storage config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `icon-${crypto.randomUUID()}${ext}`);
-  }
+const r2 = new S3Client({
+  region: 'auto',
+  endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: R2_ACCESS_KEY_ID,
+    secretAccessKey: R2_SECRET_ACCESS_KEY,
+  },
 });
+
+// Multer memory storage (no local disk write)
 const upload = multer({
-  storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
   fileFilter: (req, file, cb) => {
     const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-    allowed.includes(file.mimetype) ? cb(null, true) : cb(new Error('Only image files allowed'));
-  }
+    allowed.includes(file.mimetype) ? cb(null, true) : cb(new Error('Only image files are allowed'));
+  },
 });
 
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
-app.use('/uploads', express.static(UPLOADS_DIR));
 
 // JWT auth middleware
 function requireAuth(req, res, next) {
@@ -99,13 +104,30 @@ function requireAuth(req, res, next) {
   }
 }
 
-// ── File Upload Route ────────────────────────────────────────────────────────
-app.post('/api/admin/upload', requireAuth, upload.single('icon'), (req, res) => {
+// ── File Upload Route (Cloudflare R2) ────────────────────────────────────────
+app.post('/api/admin/upload', requireAuth, upload.single('icon'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const url = `/uploads/${req.file.filename}`;
-  res.json({ url });
-});
+  if (!R2_ACCOUNT_ID || !R2_BUCKET_NAME) {
+    return res.status(500).json({ error: 'R2 storage is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL in your environment.' });
+  }
+  try {
+    const ext = req.file.originalname.split('.').pop();
+    const key = `icons/icon-${crypto.randomUUID()}.${ext}`;
 
+    await r2.send(new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
+    }));
+
+    const publicUrl = `${R2_PUBLIC_URL}/${key}`;
+    res.json({ url: publicUrl });
+  } catch (err) {
+    console.error('R2 upload error:', err);
+    res.status(500).json({ error: 'Upload to R2 failed: ' + err.message });
+  }
+});
 
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
