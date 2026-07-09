@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { LayoutGrid, Smartphone, Globe, ExternalLink } from 'lucide-react';
+import { LayoutGrid, Smartphone, Globe, ExternalLink, ArrowLeft } from 'lucide-react';
 import styles from './Categories.module.css';
 
 export default function Categories() {
   const [apps, setApps] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  const [activeCategory, setActiveCategory] = useState('All Categories');
-  // 'All', 'Website', 'Android App'
+  // 'All' | 'Website' | 'Android App'
   const [activeTab, setActiveTab] = useState('All');
+  // null = show categories grid, otherwise the selected category id
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -23,122 +23,136 @@ export default function Categories() {
       setCategories(catsData);
       setIsLoading(false);
     })
-    .catch(err => {
-      console.error('Failed to fetch data:', err);
-      setError('Failed to load data. Please try again later.');
-      setIsLoading(false);
-    });
+    .catch(() => setIsLoading(false));
   }, []);
 
   const tabs = [
-    { id: 'All', label: 'All', icon: <LayoutGrid size={18} /> },
+    { id: 'All', label: 'All Categories', icon: <LayoutGrid size={18} /> },
     { id: 'Website', label: 'Websites', icon: <Globe size={18} /> },
     { id: 'Android App', label: 'Android Apps', icon: <Smartphone size={18} /> },
   ];
 
-  // Filter categories for the sidebar based on the active tab
-  const sidebarCategories = categories.filter(cat => 
+  // Categories visible in the current tab
+  const visibleCategories = categories.filter(cat =>
     activeTab === 'All' ? true : cat.section === activeTab
   );
 
-  // When tab changes, if the current active category isn't in the new list, reset to 'All Categories'
-  useEffect(() => {
-    if (activeCategory !== 'All Categories') {
-      const categoryExists = sidebarCategories.find(c => c.id === activeCategory);
-      if (!categoryExists) {
-        setActiveCategory('All Categories');
-      }
-    }
-  }, [activeTab, sidebarCategories, activeCategory]);
+  // Apps in the selected category
+  const appsInCategory = selectedCategory
+    ? apps.filter(app => app.categoryId === selectedCategory)
+    : [];
 
-  // Filter apps based on active tab and category
-  const filteredApps = apps.filter(app => {
-    const tabMatch = activeTab === 'All' || app.section === activeTab;
-    const categoryMatch = activeCategory === 'All Categories' || app.categoryId === activeCategory;
-    return tabMatch && categoryMatch;
-  });
+  const selectedCategoryName = categories.find(c => c.id === selectedCategory)?.name;
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSelectedCategory(null);
+  };
+
+  // Count apps in each category
+  const appCountForCategory = (catId) =>
+    apps.filter(a => a.categoryId === catId).length;
 
   return (
     <>
       <Helmet><title>Categories | ViteNest</title></Helmet>
-      <main className="container" style={{paddingTop: '120px', minHeight: '80vh', paddingBottom: '80px'}}>
-        <div style={{marginBottom: '40px'}}>
+      <main className="container" style={{ paddingTop: '120px', minHeight: '80vh', paddingBottom: '80px' }}>
+        <div style={{ marginBottom: '48px' }}>
           <h1 className="text-gradient">Explore Ecosystem</h1>
-          <p style={{color: 'var(--text-muted)', fontSize: '1.1rem'}}>Browse our massive collection of free tools by category and platform.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>
+            Browse our collection of free tools by category and platform.
+          </p>
         </div>
 
-        {error ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#f87171' }}>{error}</div>
-        ) : (
-          <div className={styles.layout}>
-            {/* Sidebar Categories */}
-            <aside className={styles.sidebar}>
-              <button 
-                className={`${styles.categoryBtn} ${activeCategory === 'All Categories' ? styles.active : ''}`}
-                onClick={() => setActiveCategory('All Categories')}
-              >
-                All Categories
-              </button>
-              {sidebarCategories.map(cat => (
-                <button 
-                  key={cat.id}
-                  className={`${styles.categoryBtn} ${activeCategory === cat.id ? styles.active : ''}`}
-                  onClick={() => setActiveCategory(cat.id)}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </aside>
+        {/* Section Tabs */}
+        <div className={styles.tabs} style={{ marginBottom: '40px' }}>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`${styles.tab} ${activeTab === tab.id ? styles.activeTab : ''}`}
+              onClick={() => handleTabChange(tab.id)}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+        </div>
 
-            {/* Main Content & Tabs */}
-            <div className={styles.mainContent}>
-              <div className={styles.tabs}>
-                {tabs.map(tab => (
-                  <button
-                    key={tab.id}
-                    className={`${styles.tab} ${activeTab === tab.id ? styles.activeTab : ''}`}
-                    onClick={() => setActiveTab(tab.id)}
-                    style={{display: 'flex', alignItems: 'center', gap: '8px'}}
-                  >
-                    {tab.icon} {tab.label}
-                  </button>
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading...</div>
+        ) : selectedCategory ? (
+          /* ── Apps in selected category ── */
+          <div>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: 'transparent', border: 'none', color: 'var(--neon-blue)',
+                cursor: 'pointer', fontSize: '0.95rem', marginBottom: '32px', padding: 0
+              }}
+            >
+              <ArrowLeft size={18} /> Back to Categories
+            </button>
+
+            <h2 style={{ marginBottom: '24px', fontFamily: 'var(--font-display)' }}>
+              {selectedCategoryName}
+            </h2>
+
+            {appsInCategory.length > 0 ? (
+              <div className={styles.toolsGrid}>
+                {appsInCategory.map(app => (
+                  <div key={app.id} className={`glass-panel ${styles.toolCard}`}>
+                    <span className={styles.toolType}>{app.section}</span>
+                    <h3>{app.name}</h3>
+                    <p>{app.description}</p>
+                    <a
+                      href={app.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.launchBtn}
+                      style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                      {app.section === 'Website' ? 'Launch Web App' : 'Download App'}
+                      <ExternalLink size={16} />
+                    </a>
+                  </div>
                 ))}
               </div>
-
-              {isLoading ? (
-                <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading tools...</div>
-              ) : filteredApps.length > 0 ? (
-                <div className={styles.toolsGrid}>
-                  {filteredApps.map((app) => {
-                    const catName = categories.find(c => c.id === app.categoryId)?.name || 'Uncategorized';
-                    return (
-                      <div key={app.id} className={`glass-panel ${styles.toolCard}`}>
-                        <span className={styles.toolType}>{catName}</span>
-                        <h3>{app.name}</h3>
-                        <p>{app.description}</p>
-                        <a 
-                          href={app.link} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className={styles.launchBtn} 
-                          style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                        >
-                          {app.section === 'Website' ? 'Launch Web App' : 'Download App'}
-                          <ExternalLink size={16} />
-                        </a>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className={styles.noResults}>
-                  <LayoutGrid size={48} style={{opacity: 0.2, margin: '0 auto 16px'}} />
-                  <h3>No tools found</h3>
-                  <p>We haven't added any apps matching these filters yet.</p>
-                </div>
-              )}
-            </div>
+            ) : (
+              <div className={styles.noResults}>
+                <LayoutGrid size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
+                <h3>No apps yet</h3>
+                <p>No apps have been added to this category yet.</p>
+              </div>
+            )}
           </div>
+        ) : (
+          /* ── Category Cards Grid ── */
+          visibleCategories.length > 0 ? (
+            <div className={styles.categoryCardsGrid}>
+              {visibleCategories.map(cat => (
+                <button
+                  key={cat.id}
+                  className={`glass-panel ${styles.categoryCard}`}
+                  onClick={() => setSelectedCategory(cat.id)}
+                >
+                  <div className={styles.catIconWrapper}>
+                    {cat.section === 'Website' ? <Globe size={28} /> : <Smartphone size={28} />}
+                  </div>
+                  <h3>{cat.name}</h3>
+                  <p className={styles.catMeta}>
+                    {appCountForCategory(cat.id)} app{appCountForCategory(cat.id) !== 1 ? 's' : ''} · {cat.section}
+                  </p>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.noResults}>
+              <LayoutGrid size={48} style={{ opacity: 0.2, margin: '0 auto 16px' }} />
+              <h3>No categories found</h3>
+              <p>Add categories from the admin panel to see them here.</p>
+            </div>
+          )
         )}
       </main>
     </>

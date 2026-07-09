@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, X, ExternalLink, Star } from 'lucide-react';
 import styles from './Admin.module.css';
 
-export default function AdminApps() {
+export default function AdminApps({ section }) {
   const [apps, setApps] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -12,13 +12,18 @@ export default function AdminApps() {
   const [newApp, setNewApp] = useState({ 
     name: '', 
     description: '',
-    section: 'Website',
+    section: section || 'Website',
     categoryId: '',
     isFeatured: false,
     link: '',
     icon: ''
   });
   const [isCreating, setIsCreating] = useState(false);
+
+  // Reset form section when section prop changes
+  useEffect(() => {
+    setNewApp(prev => ({ ...prev, section: section || 'Website', categoryId: '' }));
+  }, [section]);
 
   const fetchData = async () => {
     try {
@@ -87,7 +92,7 @@ export default function AdminApps() {
       setApps([...apps, data]);
       setIsModalOpen(false);
       setNewApp({ 
-        name: '', description: '', section: 'Website', categoryId: '', isFeatured: false, link: '', icon: '' 
+        name: '', description: '', section: section || 'Website', categoryId: '', isFeatured: false, link: '', icon: '' 
       });
     } catch (err) {
       setError(err.message);
@@ -98,17 +103,21 @@ export default function AdminApps() {
 
   // Filter categories based on selected section
   const availableCategories = categories.filter(c => c.section === newApp.section);
+  // Filter apps by section prop
+  const displayedApps = section ? apps.filter(a => a.section === section) : apps;
+  const pageTitle = section === 'Website' ? 'Websites' : section === 'Android App' ? 'Android Apps' : 'Apps & Websites';
+  const pageDesc = section === 'Website' ? 'Manage your website listings.' : section === 'Android App' ? 'Manage your Android app listings.' : 'Manage all directory listings.';
 
   return (
     <div className={styles.animateFadeIn}>
       <header className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Apps & Websites</h1>
-          <p style={{ color: '#94a3b8', marginTop: '8px' }}>Manage directory listings.</p>
+          <h1 className={styles.pageTitle}>{pageTitle}</h1>
+          <p style={{ color: '#94a3b8', marginTop: '8px' }}>{pageDesc}</p>
         </div>
         <button className={styles.btnPrimary} style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setIsModalOpen(true)}>
           <Plus size={18} />
-          Add App
+          Add {section === 'Android App' ? 'App' : 'Website'}
         </button>
       </header>
 
@@ -130,7 +139,7 @@ export default function AdminApps() {
               </tr>
             </thead>
             <tbody>
-              {apps.map(app => {
+              {displayedApps.map(app => {
                 const cat = categories.find(c => c.id === app.categoryId);
                 return (
                   <tr key={app.id}>
@@ -161,7 +170,7 @@ export default function AdminApps() {
                   </tr>
                 );
               })}
-              {apps.length === 0 && (
+              {displayedApps.length === 0 && (
                 <tr>
                   <td colSpan="6" style={{ textAlign: 'center', padding: '40px' }}>No apps found.</td>
                 </tr>

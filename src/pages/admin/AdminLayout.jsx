@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { LayoutDashboard, Users, LogOut, Shield, Grid, Package } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Shield, Grid, Globe, Smartphone } from 'lucide-react';
 import styles from './Admin.module.css';
 
 export default function AdminLayout() {
@@ -59,12 +59,22 @@ export default function AdminLayout() {
             <LayoutDashboard size={20} />
             Dashboard
           </Link>
+
+          <div className={styles.navSection}>Content</div>
+
           <Link 
-            to="/admin/apps" 
-            className={`${styles.navItem} ${currentPath === '/admin/apps' ? styles.active : ''}`}
+            to="/admin/websites" 
+            className={`${styles.navItem} ${currentPath === '/admin/websites' ? styles.active : ''}`}
           >
-            <Package size={20} />
-            Apps & Websites
+            <Globe size={20} />
+            Websites
+          </Link>
+          <Link 
+            to="/admin/android-apps" 
+            className={`${styles.navItem} ${currentPath === '/admin/android-apps' ? styles.active : ''}`}
+          >
+            <Smartphone size={20} />
+            Android Apps
           </Link>
           <Link 
             to="/admin/categories" 
@@ -73,6 +83,9 @@ export default function AdminLayout() {
             <Grid size={20} />
             Categories
           </Link>
+
+          <div className={styles.navSection}>Settings</div>
+
           <Link 
             to="/admin/users" 
             className={`${styles.navItem} ${currentPath === '/admin/users' ? styles.active : ''}`}
