@@ -240,10 +240,27 @@ app.delete('/api/admin/categories/:id', requireAuth, (req, res) => {
 
 // Apps CRUD
 app.post('/api/admin/apps', requireAuth, (req, res) => {
-  const { name, description, section, categoryId, isFeatured, link, icon } = req.body;
+  const { name, description, section, categoryId, isFeatured, link, icon, appSlug, hasLegal, termsOfService, privacyPolicy, images } = req.body;
   if (!name || !section || !link) return res.status(400).json({ error: 'Name, section, and link required' });
 
   const db = readData();
+  
+  // Generate safe slug
+  let slug = appSlug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  if (!slug) {
+    slug = 'app-' + crypto.randomUUID().slice(0, 8);
+  }
+  
+  // Ensure unique slug
+  let existing = db.apps.find(a => a.appSlug === slug);
+  let count = 1;
+  let originalSlug = slug;
+  while (existing) {
+    slug = `${originalSlug}-${count}`;
+    existing = db.apps.find(a => a.appSlug === slug);
+    count++;
+  }
+
   const newApp = {
     id: crypto.randomUUID(),
     name,
@@ -252,7 +269,12 @@ app.post('/api/admin/apps', requireAuth, (req, res) => {
     categoryId: categoryId || null,
     isFeatured: !!isFeatured,
     link,
-    icon: icon || 'FileText', // Default generic icon
+    icon: icon || 'FileText',
+    appSlug: slug,
+    hasLegal: !!hasLegal,
+    termsOfService: hasLegal ? termsOfService : null,
+    privacyPolicy: hasLegal ? privacyPolicy : null,
+    images: images || [],
     createdAt: new Date().toISOString()
   };
   
@@ -266,6 +288,14 @@ app.delete('/api/admin/apps/:id', requireAuth, (req, res) => {
   db.apps = db.apps.filter(a => a.id !== req.params.id);
   writeData(db);
   res.json({ success: true });
+});
+
+// Get single app by slug
+app.get('/api/apps/:appSlug', (req, res) => {
+  const db = readData();
+  const app = db.apps.find(a => a.appSlug === req.params.appSlug);
+  if (!app) return res.status(404).json({ error: 'App not found' });
+  res.json(app);
 });
 
 // ── SPA Fallback ─────────────────────────────────────────────────────────────

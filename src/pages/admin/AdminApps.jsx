@@ -20,14 +20,17 @@ export default function AdminApps({ section }) {
     appSlug: '',
     hasLegal: false,
     termsOfService: { title: 'Terms of Service', slug: 'terms', headline: '', content: '' },
-    privacyPolicy: { title: 'Privacy Policy', slug: 'privacy', headline: '', content: '' }
+    privacyPolicy: { title: 'Privacy Policy', slug: 'privacy', headline: '', content: '' },
+    images: []
   });
   const [isCreating, setIsCreating] = useState(false);
   const [showNewCatForm, setShowNewCatForm] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [isCreatingCat, setIsCreatingCat] = useState(false);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const [isUploadingScreenshot, setIsUploadingScreenshot] = useState(false);
   const iconInputRef = React.useRef(null);
+  const screenshotInputRef = React.useRef(null);
 
   // Reset form section when section prop changes
   useEffect(() => {
@@ -107,7 +110,18 @@ export default function AdminApps({ section }) {
       setApps([...apps, data]);
       setIsModalOpen(false);
       setNewApp({ 
-        name: '', description: '', section: section || 'Website', categoryId: '', isFeatured: false, link: '', icon: '' 
+        name: '', 
+        description: '', 
+        section: section || 'Website', 
+        categoryId: '', 
+        isFeatured: false, 
+        link: '', 
+        icon: '',
+        appSlug: '',
+        hasLegal: false,
+        termsOfService: { title: 'Terms of Service', slug: 'terms', headline: '', content: '' },
+        privacyPolicy: { title: 'Privacy Policy', slug: 'privacy', headline: '', content: '' },
+        images: []
       });
     } catch (err) {
       setError(err.message);
@@ -158,6 +172,34 @@ export default function AdminApps({ section }) {
       alert(err.message);
     } finally {
       setIsUploadingIcon(false);
+    }
+  };
+
+  const handleScreenshotUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    setIsUploadingScreenshot(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const newImages = [...(newApp.images || [])];
+      
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('icon', files[i]); // uses 'icon' field for s3 upload route
+        
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+        newImages.push(data.url);
+      }
+      setNewApp(prev => ({ ...prev, images: newImages }));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsUploadingScreenshot(false);
     }
   };
 
@@ -409,6 +451,69 @@ export default function AdminApps({ section }) {
                 <label htmlFor="featuredCheck" className={styles.formLabel} style={{ marginBottom: 0, cursor: 'pointer' }}>
                   Feature on Homepage
                 </label>
+              </div>
+
+              {/* Screenshots (Optional) */}
+              <div className={styles.formGroup} style={{ marginTop: '16px' }}>
+                <label className={styles.formLabel}>Screenshots / Images (Optional)</label>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
+                  {/* Upload box */}
+                  <div
+                    onClick={() => screenshotInputRef.current?.click()}
+                    style={{
+                      width: '80px', height: '80px', borderRadius: '12px',
+                      border: '2px dashed rgba(255,255,255,0.15)',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', background: 'rgba(255,255,255,0.03)', transition: 'border-color 0.2s',
+                      color: '#cbd5e1', fontSize: '0.8rem', textAlign: 'center'
+                    }}
+                    title="Click to upload screenshot"
+                  >
+                    {isUploadingScreenshot ? '...' : '+ Add'}
+                  </div>
+                  <input
+                    ref={screenshotInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleScreenshotUpload(e.target.files)}
+                  />
+
+                  {/* Preview of uploaded screenshots */}
+                  {newApp.images && newApp.images.map((imgUrl, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        width: '80px', height: '80px', borderRadius: '12px',
+                        position: 'relative', overflow: 'hidden',
+                        border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      <img src={imgUrl} alt={`Screenshot ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...newApp.images];
+                          updated.splice(idx, 1);
+                          setNewApp({ ...newApp, images: updated });
+                        }}
+                        style={{
+                          position: 'absolute', top: '4px', right: '4px',
+                          background: 'rgba(239, 68, 68, 0.8)', color: 'white',
+                          border: 'none', borderRadius: '50%', width: '18px', height: '18px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '10px', cursor: 'pointer', padding: 0
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '6px' }}>
+                  Upload screenshots of your app/website. Multiple selections are supported.
+                </p>
               </div>
 
               {/* Legal Pages Section */}

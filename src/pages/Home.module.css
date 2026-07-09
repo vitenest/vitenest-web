@@ -160,21 +160,40 @@
 }
 
 .toolCard {
-  padding: 32px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.toolCard:hover {
+  transform: translateY(-5px);
+  border-color: var(--neon-blue);
+  box-shadow: 0 12px 30px -10px rgba(2, 132, 199, 0.15);
+  background: var(--bg-card-hover);
 }
 
 .toolIconWrapper {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: rgba(2, 132, 199, 0.1);
+  background: rgba(2, 132, 199, 0.08);
   color: var(--neon-blue);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
+  transition: all var(--transition-fast);
+}
+
+.toolCard:hover .toolIconWrapper {
+  transform: scale(1.05);
+  background: var(--neon-blue);
+  color: white;
 }
 
 .toolCard h3 {

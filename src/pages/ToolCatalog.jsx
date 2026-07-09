@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import * as LucideIcons from 'lucide-react';
 import { Search, ExternalLink } from 'lucide-react';
@@ -127,7 +128,12 @@ export default function ToolCatalog() {
           ) : (
             <div className={styles.productGrid}>
               {filteredApps.map((app) => (
-                <div key={app.id} className={`glass-panel ${styles.toolCard}`}>
+                <Link 
+                  key={app.id} 
+                  to={`/app/${app.appSlug}`} 
+                  className={`glass-panel ${styles.toolCard}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
                   <div className={styles.toolIconWrapper}>
                     {app.icon && app.icon.startsWith('http') ? (
                       <img src={app.icon} alt={app.name} style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
@@ -143,11 +149,11 @@ export default function ToolCatalog() {
                     <span className={styles.toolUsers} style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)' }}>
                       {app.section}
                     </span>
-                    <a href={app.link} target="_blank" rel="noreferrer" className={styles.launchBtn} style={{ textDecoration: 'none', display: 'inline-block' }}>
-                      <ExternalLink size={16} /> Visit
-                    </a>
+                    <div className={styles.launchBtn} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      Details
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

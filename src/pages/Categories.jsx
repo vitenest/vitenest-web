@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { LayoutGrid, Smartphone, Globe, ExternalLink, ArrowLeft } from 'lucide-react';
 import styles from './Categories.module.css';
@@ -101,21 +102,20 @@ export default function Categories() {
             {appsInCategory.length > 0 ? (
               <div className={styles.toolsGrid}>
                 {appsInCategory.map(app => (
-                  <div key={app.id} className={`glass-panel ${styles.toolCard}`}>
+                  <Link 
+                    key={app.id} 
+                    to={`/app/${app.appSlug}`} 
+                    className={`glass-panel ${styles.toolCard}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
                     <span className={styles.toolType}>{app.section}</span>
                     <h3>{app.name}</h3>
                     <p>{app.description}</p>
-                    <a
-                      href={app.link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={styles.launchBtn}
-                      style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                    >
-                      {app.section === 'Website' ? 'Launch Web App' : 'Download App'}
+                    <div className={styles.launchBtn} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      Details & Launch
                       <ExternalLink size={16} />
-                    </a>
-                  </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
             ) : (

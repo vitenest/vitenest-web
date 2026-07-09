@@ -1,0 +1,362 @@
+.main {
+  min-height: calc(100vh - 64px - 300px);
+  padding: 120px 0 80px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 32px;
+  transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--neon-blue);
+}
+
+.layoutGrid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 32px;
+  align-items: start;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* APKPure Hero Card */
+.heroCard {
+  padding: 32px;
+  background: var(--bg-card);
+}
+
+.heroFlex {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.appIconWrapper {
+  width: 100px;
+  height: 100px;
+  border-radius: 22px;
+  background: rgba(2, 132, 199, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.appIcon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lucideIcon {
+  color: var(--neon-blue);
+}
+
+.appHeaderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.appName {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.metaBadges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  background: rgba(2, 132, 199, 0.06);
+  border: 1px solid rgba(2, 132, 199, 0.12);
+  color: var(--neon-blue);
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.ctaButton {
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 20px rgba(2, 132, 199, 0.2);
+  transition: all var(--transition-fast);
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(2, 132, 199, 0.3);
+}
+
+.safetyInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Sections */
+.sectionCard {
+  padding: 32px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text-main);
+  border-bottom: 2px solid rgba(2, 132, 199, 0.08);
+  padding-bottom: 12px;
+}
+
+.description {
+  color: var(--text-main);
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.description p {
+  margin-bottom: 12px;
+}
+
+/* Screenshots Slider */
+.screenshotsContainer {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border-strong) transparent;
+}
+
+.screenshotsContainer::-webkit-scrollbar {
+  height: 6px;
+}
+
+.screenshotsContainer::-webkit-scrollbar-thumb {
+  background: var(--glass-border-strong);
+  border-radius: 10px;
+}
+
+.screenshot {
+  height: 380px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.screenshot:hover {
+  transform: scale(1.02);
+}
+
+/* Legal links */
+.legalLinksFlex {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.legalCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  transition: all var(--transition-fast);
+}
+
+.legalCard:hover {
+  border-color: var(--neon-blue);
+  background: rgba(2, 132, 199, 0.02);
+}
+
+.legalCard h4 {
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.legalCard p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Sidebar */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebarCard {
+  padding: 24px;
+}
+
+.sidebarTitle {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  margin-bottom: 16px;
+}
+
+.specList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.specItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-muted);
+}
+
+.specLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.specValue {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  font-weight: 550;
+}
+
+/* Lightbox Modal */
+.lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: zoom-out;
+}
+
+.lightboxContent {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.lightboxContent img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.lightboxClose {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: transparent;
+  color: white;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+/* Loader */
+.loadingContainer, .errorContainer {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.loader {
+  border: 4px solid rgba(2, 132, 199, 0.1);
+  border-top: 4px solid var(--neon-blue);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 992px) {
+  .layoutGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .heroFlex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .actionRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .ctaButton {
+    width: 100%;
+  }
+  .legalLinksFlex {
+    grid-template-columns: 1fr;
+  }
+}

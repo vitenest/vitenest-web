@@ -123,7 +123,12 @@ export default function Home() {
             ) : featuredApps.length > 0 ? (
               <div className={styles.productGrid}>
                 {featuredApps.map((app) => (
-                  <div key={app.id} className={`glass-panel ${styles.toolCard}`}>
+                  <Link 
+                    key={app.id} 
+                    to={`/app/${app.appSlug}`} 
+                    className={`glass-panel ${styles.toolCard}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
                     <div className={styles.toolIconWrapper}>
                       {app.icon && app.icon.startsWith('http') ? (
                         <img src={app.icon} alt={app.name} style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
@@ -139,11 +144,11 @@ export default function Home() {
                       <span className={styles.toolUsers} style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)' }}>
                         {app.section}
                       </span>
-                      <a href={app.link} target="_blank" rel="noreferrer" className={styles.launchBtn} style={{ textDecoration: 'none', display: 'inline-block' }}>
-                        Launch
-                      </a>
+                      <div className={styles.launchBtn}>
+                        Details
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (
