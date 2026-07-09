@@ -22,6 +22,8 @@ export default function AdminApps({ section }) {
   const [showNewCatForm, setShowNewCatForm] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [isCreatingCat, setIsCreatingCat] = useState(false);
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const iconInputRef = React.useRef(null);
 
   // Reset form section when section prop changes
   useEffect(() => {
@@ -124,6 +126,28 @@ export default function AdminApps({ section }) {
       alert(err.message);
     } finally {
       setIsCreatingCat(false);
+    }
+  };
+
+  const handleIconUpload = async (file) => {
+    if (!file) return;
+    setIsUploadingIcon(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('icon', file);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      setNewApp(prev => ({ ...prev, icon: data.url }));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsUploadingIcon(false);
     }
   };
 
@@ -254,14 +278,48 @@ export default function AdminApps({ section }) {
               </div>
               
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Icon (Lucide icon name or URL)</label>
-                <input
-                  type="text"
-                  className={styles.formInput}
-                  value={newApp.icon}
-                  onChange={(e) => setNewApp({...newApp, icon: e.target.value})}
-                  placeholder="e.g. FileText, Zap, or https://..."
-                />
+                <label className={styles.formLabel}>Icon</label>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  {/* Preview */}
+                  <div
+                    onClick={() => iconInputRef.current?.click()}
+                    style={{
+                      width: '64px', height: '64px', borderRadius: '12px',
+                      border: '2px dashed rgba(255,255,255,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', flexShrink: 0, overflow: 'hidden',
+                      background: 'rgba(255,255,255,0.03)', transition: 'border-color 0.2s'
+                    }}
+                    title="Click to upload icon"
+                  >
+                    {isUploadingIcon ? (
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>...</span>
+                    ) : newApp.icon && (newApp.icon.startsWith('/') || newApp.icon.startsWith('http')) ? (
+                      <img src={newApp.icon} alt="icon" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    ) : (
+                      <span style={{ fontSize: '1.5rem' }}>🖼</span>
+                    )}
+                  </div>
+                  <input
+                    ref={iconInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleIconUpload(e.target.files[0])}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <input
+                      type="text"
+                      className={styles.formInput}
+                      value={newApp.icon}
+                      onChange={(e) => setNewApp({...newApp, icon: e.target.value})}
+                      placeholder="Or type a Lucide icon name (e.g. Zap)"
+                    />
+                    <p style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '6px' }}>
+                      Click the box to upload an image, or type a Lucide icon name below.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: '16px' }}>

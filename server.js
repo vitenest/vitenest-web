@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import fs from 'fs';
+import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,9 +58,31 @@ const users = [
   },
 ];
 
+// Ensure uploads directory exists
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+// Multer storage config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `icon-${crypto.randomUUID()}${ext}`);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    allowed.includes(file.mimetype) ? cb(null, true) : cb(new Error('Only image files allowed'));
+  }
+});
+
 // ── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // JWT auth middleware
 function requireAuth(req, res, next) {
@@ -76,7 +99,13 @@ function requireAuth(req, res, next) {
   }
 }
 
-// ── Auth & Admin Users Routes ────────────────────────────────────────────────
+// ── File Upload Route ────────────────────────────────────────────────────────
+app.post('/api/admin/upload', requireAuth, upload.single('icon'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});
+
 
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
