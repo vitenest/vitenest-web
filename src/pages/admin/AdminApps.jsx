@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, X, ExternalLink, Star } from 'lucide-react';
 import styles from './Admin.module.css';
+import MediaLibraryModal from '../../components/MediaLibraryModal';
 
 export default function AdminApps({ section }) {
   const [apps, setApps] = useState([]);
@@ -29,6 +30,7 @@ export default function AdminApps({ section }) {
   const [isCreatingCat, setIsCreatingCat] = useState(false);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isUploadingScreenshot, setIsUploadingScreenshot] = useState(false);
+  const [mediaModalType, setMediaModalType] = useState(null);
   const iconInputRef = React.useRef(null);
   const screenshotInputRef = React.useRef(null);
 
@@ -282,6 +284,19 @@ export default function AdminApps({ section }) {
         )}
       </div>
 
+      <MediaLibraryModal 
+        isOpen={!!mediaModalType}
+        onClose={() => setMediaModalType(null)}
+        multiSelect={mediaModalType === 'screenshots'}
+        onSelect={(selected) => {
+          if (mediaModalType === 'icon') {
+            setNewApp(prev => ({ ...prev, icon: selected }));
+          } else if (mediaModalType === 'screenshots') {
+            setNewApp(prev => ({ ...prev, images: [...prev.images, ...selected] }));
+          }
+        }}
+      />
+
       {/* Create App Modal */}
       {isModalOpen && (
         <div className={styles.modalOverlay} style={{ overflowY: 'auto', padding: '20px 0' }}>
@@ -367,9 +382,18 @@ export default function AdminApps({ section }) {
                       onChange={(e) => setNewApp({...newApp, icon: e.target.value})}
                       placeholder="Or type a Lucide icon name (e.g. Zap)"
                     />
-                    <p style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '6px' }}>
-                      Click the box to upload an image, or type a Lucide icon name below.
-                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
+                      <p style={{ color: '#64748b', fontSize: '0.75rem', margin: 0 }}>
+                        Click the box to upload an image, or type a Lucide icon name below.
+                      </p>
+                      <button 
+                        type="button" 
+                        onClick={() => setMediaModalType('icon')} 
+                        style={{ background: 'transparent', border: '1px solid var(--neon-blue)', color: 'var(--neon-blue)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer' }}
+                      >
+                        Browse Media
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -455,7 +479,16 @@ export default function AdminApps({ section }) {
 
               {/* Screenshots (Optional) */}
               <div className={styles.formGroup} style={{ marginTop: '16px' }}>
-                <label className={styles.formLabel}>Screenshots / Images (Optional)</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label className={styles.formLabel} style={{ marginBottom: 0 }}>Screenshots / Images (Optional)</label>
+                  <button 
+                    type="button" 
+                    onClick={() => setMediaModalType('screenshots')} 
+                    style={{ background: 'transparent', border: '1px solid var(--neon-blue)', color: 'var(--neon-blue)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer' }}
+                  >
+                    Browse Media
+                  </button>
+                </div>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
                   {/* Upload box */}
                   <div

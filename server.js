@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import multer from 'multer';
 import pg from 'pg';
 
@@ -154,7 +154,7 @@ function rowToCategory(row) {
   };
 }
 
-// ── File Upload Route ─────────────────────────────────────────────────────────
+// ── File Upload & Media Routes ────────────────────────────────────────────────
 app.post('/api/admin/upload', requireAuth, upload.single('icon'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   if (!R2_ACCOUNT_ID || !R2_BUCKET_NAME) {
@@ -173,6 +173,28 @@ app.post('/api/admin/upload', requireAuth, upload.single('icon'), async (req, re
   } catch (err) {
     console.error('R2 upload error:', err);
     res.status(500).json({ error: 'Upload to R2 failed: ' + err.message });
+  }
+});
+
+app.get('/api/admin/media', requireAuth, async (req, res) => {
+  if (!R2_ACCOUNT_ID || !R2_BUCKET_NAME) {
+    return res.status(500).json({ error: 'R2 storage is not configured.' });
+  }
+  try {
+    const data = await r2.send(new ListObjectsV2Command({
+      Bucket: R2_BUCKET_NAME,
+      Prefix: 'icons/'
+    }));
+    const files = (data.Contents || []).map(item => ({
+      key: item.Key,
+      url: `${R2_PUBLIC_URL}/${item.Key}`,
+      lastModified: item.LastModified,
+      size: item.Size
+    })).sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+    res.json(files);
+  } catch (err) {
+    console.error('R2 list media error:', err);
+    res.status(500).json({ error: 'Failed to list media from R2: ' + err.message });
   }
 });
 
