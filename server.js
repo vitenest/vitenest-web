@@ -3,9 +3,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import fs from 'fs';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import multer from 'multer';
+import pg from 'pg';
+
+const { Pool } = pg;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,37 +19,83 @@ const JWT_SECRET = process.env.JWT_SECRET || 'changeme-set-in-env';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-const DATA_FILE = path.join(__dirname, 'data.json');
+// ── PostgreSQL Setup ──────────────────────────────────────────────────────────
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('sslmode=require')
+    ? { rejectUnauthorized: false }
+    : process.env.NODE_ENV === 'production' && process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')
+      ? { rejectUnauthorized: false }
+      : false,
+});
 
-// Helper to read data
-function readData() {
-  if (!fs.existsSync(DATA_FILE)) {
-    return { categories: [], apps: [] };
-  }
+// Initialize database tables
+async function initDb() {
+  const client = await pool.connect();
   try {
-    const data = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(data);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        section TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS apps (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT DEFAULT '',
+        section TEXT NOT NULL,
+        category_id TEXT REFERENCES categories(id) ON DELETE SET NULL,
+        is_featured BOOLEAN DEFAULT FALSE,
+        link TEXT NOT NULL,
+        icon TEXT DEFAULT 'FileText',
+        app_slug TEXT UNIQUE,
+        has_legal BOOLEAN DEFAULT FALSE,
+        terms_of_service JSONB,
+        privacy_policy JSONB,
+        images JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    console.log('✅ Database tables initialized');
   } catch (err) {
-    console.error("Error reading data.json:", err);
-    return { categories: [], apps: [] };
+    console.error('❌ Database init error:', err);
+    throw err;
+  } finally {
+    client.release();
   }
 }
 
-// Helper to write data
-function writeData(data) {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
-  } catch (err) {
-    console.error("Error writing data.json:", err);
-  }
-}
+// ── Cloudflare R2 Setup ──────────────────────────────────────────────────────
+const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || '';
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '';
+const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || '';
+const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
 
-// Ensure data file exists with default structure
-if (!fs.existsSync(DATA_FILE)) {
-  writeData({ categories: [], apps: [] });
-}
+const r2 = new S3Client({
+  region: 'auto',
+  endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: R2_ACCESS_KEY_ID,
+    secretAccessKey: R2_SECRET_ACCESS_KEY,
+  },
+});
 
-// In-memory user store (seeded with the default admin from env)
+// Multer memory storage
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    allowed.includes(file.mimetype) ? cb(null, true) : cb(new Error('Only image files are allowed'));
+  },
+});
+
+// ── In-Memory Users (unchanged) ───────────────────────────────────────────────
 const users = [
   {
     id: '1',
@@ -59,37 +107,10 @@ const users = [
   },
 ];
 
-// ── Cloudflare R2 Setup ─────────────────────────────────────────────────────
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || '';
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '';
-const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || '';
-const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, ''); // e.g. https://pub-xxx.r2.dev
-
-const r2 = new S3Client({
-  region: 'auto',
-  endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: R2_ACCESS_KEY_ID,
-    secretAccessKey: R2_SECRET_ACCESS_KEY,
-  },
-});
-
-// Multer memory storage (no local disk write)
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
-  fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-    allowed.includes(file.mimetype) ? cb(null, true) : cb(new Error('Only image files are allowed'));
-  },
-});
-
-// ── Middleware ───────────────────────────────────────────────────────────────
+// ── Middleware ────────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// JWT auth middleware
 function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -104,31 +125,58 @@ function requireAuth(req, res, next) {
   }
 }
 
-// ── File Upload Route (Cloudflare R2) ────────────────────────────────────────
+// Helper: map DB row to app object
+function rowToApp(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    section: row.section,
+    categoryId: row.category_id,
+    isFeatured: row.is_featured,
+    link: row.link,
+    icon: row.icon,
+    appSlug: row.app_slug,
+    hasLegal: row.has_legal,
+    termsOfService: row.terms_of_service,
+    privacyPolicy: row.privacy_policy,
+    images: row.images || [],
+    createdAt: row.created_at,
+  };
+}
+
+// Helper: map DB row to category object
+function rowToCategory(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    section: row.section,
+  };
+}
+
+// ── File Upload Route ─────────────────────────────────────────────────────────
 app.post('/api/admin/upload', requireAuth, upload.single('icon'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   if (!R2_ACCOUNT_ID || !R2_BUCKET_NAME) {
-    return res.status(500).json({ error: 'R2 storage is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL in your environment.' });
+    return res.status(500).json({ error: 'R2 storage is not configured.' });
   }
   try {
     const ext = req.file.originalname.split('.').pop();
     const key = `icons/icon-${crypto.randomUUID()}.${ext}`;
-
     await r2.send(new PutObjectCommand({
       Bucket: R2_BUCKET_NAME,
       Key: key,
       Body: req.file.buffer,
       ContentType: req.file.mimetype,
     }));
-
-    const publicUrl = `${R2_PUBLIC_URL}/${key}`;
-    res.json({ url: publicUrl });
+    res.json({ url: `${R2_PUBLIC_URL}/${key}` });
   } catch (err) {
     console.error('R2 upload error:', err);
     res.status(500).json({ error: 'Upload to R2 failed: ' + err.message });
   }
 });
 
+// ── Auth Routes ───────────────────────────────────────────────────────────────
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -141,9 +189,9 @@ app.post('/api/admin/login', (req, res) => {
   res.json({ token, username });
 });
 
+// ── User Routes ───────────────────────────────────────────────────────────────
 app.get('/api/admin/users', requireAuth, (req, res) => {
-  const safeUsers = users.map(({ password: _pw, ...u }) => u);
-  res.json(safeUsers);
+  res.json(users.map(({ password: _pw, ...u }) => u));
 });
 
 app.post('/api/admin/users', requireAuth, (req, res) => {
@@ -156,9 +204,7 @@ app.post('/api/admin/users', requireAuth, (req, res) => {
   }
   const newUser = {
     id: crypto.randomUUID(),
-    name,
-    username,
-    password,
+    name, username, password,
     role: role || 'editor',
     createdAt: new Date().toISOString(),
   };
@@ -177,132 +223,205 @@ app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/admin/stats', requireAuth, (req, res) => {
-  const db = readData();
-  res.json({
-    totalUsers: users.length,
-    adminUsers: users.filter(u => u.role === 'admin').length,
-    editorUsers: users.filter(u => u.role === 'editor').length,
-    totalApps: db.apps.length,
-    totalCategories: db.categories.length
-  });
+app.get('/api/admin/stats', requireAuth, async (req, res) => {
+  try {
+    const [appsRes, catsRes] = await Promise.all([
+      pool.query('SELECT COUNT(*) FROM apps'),
+      pool.query('SELECT COUNT(*) FROM categories'),
+    ]);
+    res.json({
+      totalUsers: users.length,
+      adminUsers: users.filter(u => u.role === 'admin').length,
+      editorUsers: users.filter(u => u.role === 'editor').length,
+      totalApps: parseInt(appsRes.rows[0].count, 10),
+      totalCategories: parseInt(catsRes.rows[0].count, 10),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ── Public App/Category Routes ───────────────────────────────────────────────
-
-app.get('/api/categories', (req, res) => {
-  const db = readData();
-  res.json(db.categories);
+// ── Public Category Routes ────────────────────────────────────────────────────
+app.get('/api/categories', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM categories ORDER BY name');
+    res.json(result.rows.map(rowToCategory));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/api/apps', (req, res) => {
-  const db = readData();
-  let apps = db.apps;
-  
-  if (req.query.featured === 'true') {
-    apps = apps.filter(a => a.isFeatured);
+// ── Public App Routes ─────────────────────────────────────────────────────────
+app.get('/api/apps', async (req, res) => {
+  try {
+    let query = 'SELECT * FROM apps WHERE 1=1';
+    const params = [];
+    if (req.query.featured === 'true') {
+      params.push(true);
+      query += ` AND is_featured = $${params.length}`;
+    }
+    if (req.query.section) {
+      params.push(req.query.section);
+      query += ` AND section = $${params.length}`;
+    }
+    if (req.query.categoryId) {
+      params.push(req.query.categoryId);
+      query += ` AND category_id = $${params.length}`;
+    }
+    query += ' ORDER BY created_at DESC';
+    const result = await pool.query(query, params);
+    res.json(result.rows.map(rowToApp));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  if (req.query.section) {
-    apps = apps.filter(a => a.section === req.query.section);
-  }
-  if (req.query.categoryId) {
-    apps = apps.filter(a => a.categoryId === req.query.categoryId);
-  }
-  
-  res.json(apps);
 });
 
-// ── Protected Admin App/Category Routes ──────────────────────────────────────
+app.get('/api/apps/:appSlug', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM apps WHERE app_slug = $1', [req.params.appSlug]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'App not found' });
+    res.json(rowToApp(result.rows[0]));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-// Categories CRUD
-app.post('/api/admin/categories', requireAuth, (req, res) => {
+// ── Admin Category Routes ─────────────────────────────────────────────────────
+app.post('/api/admin/categories', requireAuth, async (req, res) => {
   const { name, section } = req.body;
   if (!name || !section) return res.status(400).json({ error: 'Name and section required' });
-  
-  const db = readData();
-  const newCat = {
-    id: crypto.randomUUID(),
-    name,
-    section
-  };
-  db.categories.push(newCat);
-  writeData(db);
-  res.status(201).json(newCat);
+  try {
+    const id = crypto.randomUUID();
+    const result = await pool.query(
+      'INSERT INTO categories (id, name, section) VALUES ($1, $2, $3) RETURNING *',
+      [id, name.trim(), section]
+    );
+    res.status(201).json(rowToCategory(result.rows[0]));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.delete('/api/admin/categories/:id', requireAuth, (req, res) => {
-  const db = readData();
-  db.categories = db.categories.filter(c => c.id !== req.params.id);
-  // Also remove apps associated? Or let user handle it.
-  writeData(db);
-  res.json({ success: true });
+app.delete('/api/admin/categories/:id', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM categories WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Apps CRUD
-app.post('/api/admin/apps', requireAuth, (req, res) => {
+// ── Admin App Routes ──────────────────────────────────────────────────────────
+app.post('/api/admin/apps', requireAuth, async (req, res) => {
   const { name, description, section, categoryId, isFeatured, link, icon, appSlug, hasLegal, termsOfService, privacyPolicy, images } = req.body;
-  if (!name || !section || !link) return res.status(400).json({ error: 'Name, section, and link required' });
+  if (!name || !section || !link) {
+    return res.status(400).json({ error: 'Name, section, and link are required' });
+  }
 
-  const db = readData();
-  
-  // Generate safe slug
+  // Generate unique slug
   let slug = appSlug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-  if (!slug) {
-    slug = 'app-' + crypto.randomUUID().slice(0, 8);
+  if (!slug) slug = 'app-' + crypto.randomUUID().slice(0, 8);
+
+  try {
+    // Ensure slug uniqueness
+    let slugCandidate = slug;
+    let count = 1;
+    while (true) {
+      const exists = await pool.query('SELECT id FROM apps WHERE app_slug = $1', [slugCandidate]);
+      if (exists.rows.length === 0) break;
+      slugCandidate = `${slug}-${count++}`;
+    }
+
+    const id = crypto.randomUUID();
+    const result = await pool.query(
+      `INSERT INTO apps (id, name, description, section, category_id, is_featured, link, icon, app_slug, has_legal, terms_of_service, privacy_policy, images)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       RETURNING *`,
+      [
+        id,
+        name,
+        description || '',
+        section,
+        categoryId || null,
+        !!isFeatured,
+        link,
+        icon || 'FileText',
+        slugCandidate,
+        !!hasLegal,
+        hasLegal && termsOfService ? JSON.stringify(termsOfService) : null,
+        hasLegal && privacyPolicy ? JSON.stringify(privacyPolicy) : null,
+        JSON.stringify(images || []),
+      ]
+    );
+    res.status(201).json(rowToApp(result.rows[0]));
+  } catch (err) {
+    console.error('Create app error:', err);
+    res.status(500).json({ error: err.message });
   }
-  
-  // Ensure unique slug
-  let existing = db.apps.find(a => a.appSlug === slug);
-  let count = 1;
-  let originalSlug = slug;
-  while (existing) {
-    slug = `${originalSlug}-${count}`;
-    existing = db.apps.find(a => a.appSlug === slug);
-    count++;
+});
+
+app.put('/api/admin/apps/:id', requireAuth, async (req, res) => {
+  const { name, description, section, categoryId, isFeatured, link, icon, appSlug, hasLegal, termsOfService, privacyPolicy, images } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE apps SET
+        name = COALESCE($1, name),
+        description = COALESCE($2, description),
+        section = COALESCE($3, section),
+        category_id = $4,
+        is_featured = COALESCE($5, is_featured),
+        link = COALESCE($6, link),
+        icon = COALESCE($7, icon),
+        app_slug = COALESCE($8, app_slug),
+        has_legal = COALESCE($9, has_legal),
+        terms_of_service = $10,
+        privacy_policy = $11,
+        images = COALESCE($12, images)
+       WHERE id = $13 RETURNING *`,
+      [
+        name, description, section,
+        categoryId || null,
+        isFeatured !== undefined ? !!isFeatured : null,
+        link, icon, appSlug,
+        hasLegal !== undefined ? !!hasLegal : null,
+        hasLegal && termsOfService ? JSON.stringify(termsOfService) : null,
+        hasLegal && privacyPolicy ? JSON.stringify(privacyPolicy) : null,
+        images ? JSON.stringify(images) : null,
+        req.params.id,
+      ]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'App not found' });
+    res.json(rowToApp(result.rows[0]));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  const newApp = {
-    id: crypto.randomUUID(),
-    name,
-    description: description || '',
-    section,
-    categoryId: categoryId || null,
-    isFeatured: !!isFeatured,
-    link,
-    icon: icon || 'FileText',
-    appSlug: slug,
-    hasLegal: !!hasLegal,
-    termsOfService: hasLegal ? termsOfService : null,
-    privacyPolicy: hasLegal ? privacyPolicy : null,
-    images: images || [],
-    createdAt: new Date().toISOString()
-  };
-  
-  db.apps.push(newApp);
-  writeData(db);
-  res.status(201).json(newApp);
 });
 
-app.delete('/api/admin/apps/:id', requireAuth, (req, res) => {
-  const db = readData();
-  db.apps = db.apps.filter(a => a.id !== req.params.id);
-  writeData(db);
-  res.json({ success: true });
+app.delete('/api/admin/apps/:id', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM apps WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Get single app by slug
-app.get('/api/apps/:appSlug', (req, res) => {
-  const db = readData();
-  const app = db.apps.find(a => a.appSlug === req.params.appSlug);
-  if (!app) return res.status(404).json({ error: 'App not found' });
-  res.json(app);
-});
-
-// ── SPA Fallback ─────────────────────────────────────────────────────────────
+// ── SPA Fallback ──────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is listening on 0.0.0.0:${PORT}`);
-});
+// ── Start Server ──────────────────────────────────────────────────────────────
+async function start() {
+  try {
+    await initDb();
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server is listening on 0.0.0.0:${PORT}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
+}
+
+start();

@@ -1,153 +1,120 @@
-.layout {
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 40px;
-  align-items: start;
-}
-
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: sticky;
-  top: 100px;
-}
-
-.categoryBtn {
-  text-align: left;
-  padding: 12px 16px;
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid transparent;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all var(--transition-fast);
-}
-
-.categoryBtn:hover {
-  background: rgba(0, 0, 0, 0.02);
-  color: var(--text-main);
-}
-
-.categoryBtn.active {
-  background: rgba(2, 132, 199, 0.1);
-  color: var(--neon-blue);
-  border-color: rgba(2, 132, 199, 0.2);
-  font-weight: 600;
-}
-
-.mainContent {
-  display: flex;
-  flex-direction: column;
-}
-
 .tabs {
   display: flex;
-  gap: 16px;
-  border-bottom: 1px solid var(--glass-border);
+  gap: 8px;
   margin-bottom: 32px;
+  background: rgba(255,255,255,0.03);
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  width: fit-content;
 }
 
 .tab {
-  padding: 12px 24px;
+  padding: 10px 22px;
   background: transparent;
   color: var(--text-muted);
   font-weight: 500;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  border-radius: 10px;
+  transition: all var(--transition-fast);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .tab:hover {
-  color: var(--text-main);
+  color: #e2e8f0;
+  background: rgba(255,255,255,0.04);
 }
 
 .tab.activeTab {
-  color: var(--neon-blue);
-  border-bottom-color: var(--neon-blue);
+  color: white;
+  background: var(--accent-gradient);
+  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.2);
 }
 
 .toolsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  gap: 20px;
 }
 
 .toolCard {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  transition: transform var(--transition-fast);
+  transition: all var(--transition-fast);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
 }
 
 .toolCard:hover {
   transform: translateY(-5px);
-  border-color: var(--neon-blue);
-}
-
-.toolIcon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(124, 58, 237, 0.1);
-  color: var(--neon-purple);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
+  border-color: rgba(0, 212, 255, 0.3);
+  background: rgba(0, 212, 255, 0.03);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
 }
 
 .toolType {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--text-muted);
+  color: var(--neon-blue);
   margin-bottom: 8px;
   display: block;
+  font-weight: 600;
 }
 
 .toolCard h3 {
   margin-bottom: 8px;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
+  color: #f1f5f9;
 }
 
 .toolCard p {
   color: var(--text-muted);
   font-size: 0.9rem;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   flex: 1;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .launchBtn {
   width: 100%;
-  padding: 8px;
-  background: transparent;
-  border: 1px solid var(--glass-border-strong);
-  border-radius: 6px;
-  color: var(--text-main);
-  font-weight: 500;
+  padding: 10px;
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 10px;
+  color: var(--neon-blue);
+  font-weight: 600;
+  font-size: 0.9rem;
   transition: all var(--transition-fast);
 }
 
 .launchBtn:hover {
-  background: var(--neon-blue);
+  background: var(--accent-gradient);
   color: white;
-  border-color: var(--neon-blue);
+  border-color: transparent;
 }
 
 .categoryCardsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
 }
 
 .categoryCard {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 24px;
-  background: var(--bg-card);
+  padding: 28px 24px;
+  background: rgba(255,255,255,0.03);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
+  border-radius: 18px;
   text-align: left;
   transition: all var(--transition-fast);
   cursor: pointer;
@@ -156,40 +123,42 @@
 
 .categoryCard:hover {
   transform: translateY(-5px);
-  border-color: var(--neon-blue);
-  box-shadow: 0 12px 30px -10px rgba(2, 132, 199, 0.15);
-  background: var(--bg-card-hover);
+  border-color: rgba(0, 212, 255, 0.3);
+  background: rgba(0, 212, 255, 0.04);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 212, 255, 0.05);
 }
 
 .catIconWrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(2, 132, 199, 0.08);
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.15);
   color: var(--neon-blue);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   transition: all var(--transition-fast);
 }
 
 .categoryCard:hover .catIconWrapper {
-  background: var(--neon-blue);
+  background: var(--accent-gradient);
   color: white;
-  transform: scale(1.05);
+  border-color: transparent;
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3);
 }
 
 .categoryCard h3 {
   font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-main);
-  margin-bottom: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 6px;
 }
 
 .catMeta {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
 }
 
@@ -199,18 +168,7 @@
   color: var(--text-muted);
 }
 
-@media (max-width: 768px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-  .sidebar {
-    position: relative;
-    top: 0;
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 16px;
-  }
-  .categoryBtn {
-    white-space: nowrap;
-  }
+.noResults h3 {
+  margin-bottom: 8px;
+  color: #94a3b8;
 }
