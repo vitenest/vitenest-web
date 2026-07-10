@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
 import './index.css';
 import App from './App.jsx';
+import { ThemeProvider } from './context/ThemeContext';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -33,7 +34,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
       <HelmetProvider>
-        <App />
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
       </HelmetProvider>
     </ErrorBoundary>
   </StrictMode>,

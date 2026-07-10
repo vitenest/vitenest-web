@@ -161,7 +161,7 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
+              <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', background: 'var(--overlay-light)', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
                 <Star size={32} style={{ opacity: 0.4, marginBottom: '16px' }} />
                 <p>No featured tools yet. Add some from the admin panel!</p>
               </div>

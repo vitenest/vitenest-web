@@ -99,8 +99,8 @@ export default function ToolCatalog() {
                 <button
                   onClick={() => setActiveCategory('All')}
                   style={{
-                    padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)',
-                    background: activeCategory === 'All' ? 'rgba(255,255,255,0.1)' : 'transparent',
+                    padding: '6px 16px', borderRadius: '20px', border: '1px solid var(--overlay-medium)',
+                    background: activeCategory === 'All' ? 'var(--overlay-medium)' : 'transparent',
                     color: activeCategory === 'All' ? 'white' : '#94a3b8', cursor: 'pointer'
                   }}
                 >
@@ -111,8 +111,8 @@ export default function ToolCatalog() {
                     key={cat.id}
                     onClick={() => setActiveCategory(cat.id)}
                     style={{
-                      padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)',
-                      background: activeCategory === cat.id ? 'rgba(255,255,255,0.1)' : 'transparent',
+                      padding: '6px 16px', borderRadius: '20px', border: '1px solid var(--overlay-medium)',
+                      background: activeCategory === cat.id ? 'var(--overlay-medium)' : 'transparent',
                       color: activeCategory === cat.id ? 'white' : '#94a3b8', cursor: 'pointer'
                     }}
                   >
@@ -146,7 +146,7 @@ export default function ToolCatalog() {
                     {app.description}
                   </p>
                   <div className={styles.toolFooter}>
-                    <span className={styles.toolUsers} style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)' }}>
+                    <span className={styles.toolUsers} style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: 'var(--overlay-light)' }}>
                       {app.section}
                     </span>
                     <div className={styles.launchBtn} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
@@ -159,7 +159,7 @@ export default function ToolCatalog() {
           )}
 
           {!isLoading && filteredApps.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8', background: 'rgba(255,255,255,0.02)', borderRadius: '16px' }}>
+            <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8', background: 'var(--overlay-light)', borderRadius: '16px' }}>
               No apps found matching your filters.
             </div>
           )}

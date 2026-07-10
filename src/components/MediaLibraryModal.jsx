@@ -114,20 +114,20 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect, multiSele
 // Styles
 const overlayStyle = {
   position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-  backgroundColor: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(4px)',
+  backgroundColor: 'var(--overlay-heavy)', backdropFilter: 'blur(4px)',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
   zIndex: 9999, padding: '20px'
 };
 
 const modalStyle = {
-  backgroundColor: '#1e293b', border: '1px solid rgba(255,255,255,0.1)',
+  backgroundColor: '#1e293b', border: '1px solid var(--overlay-medium)',
   borderRadius: '16px', width: '100%', maxWidth: '800px',
   maxHeight: '85vh', display: 'flex', flexDirection: 'column',
-  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+  boxShadow: '0 25px 50px -12px var(--overlay-heavy)'
 };
 
 const headerStyle = {
-  padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.1)',
+  padding: '20px 24px', borderBottom: '1px solid var(--overlay-medium)',
   display: 'flex', justifyContent: 'space-between', alignItems: 'center'
 };
 
@@ -147,7 +147,7 @@ const gridStyle = {
 const itemStyle = {
   aspectRatio: '1', borderRadius: '8px', overflow: 'hidden',
   cursor: 'pointer', position: 'relative', border: '2px solid transparent',
-  backgroundColor: 'rgba(0,0,0,0.2)', transition: 'all 0.2s'
+  backgroundColor: 'var(--overlay-heavy)', transition: 'all 0.2s'
 };
 
 const itemSelectedStyle = {
@@ -165,13 +165,13 @@ const checkOverlayStyle = {
 };
 
 const footerStyle = {
-  padding: '20px 24px', borderTop: '1px solid rgba(255,255,255,0.1)',
+  padding: '20px 24px', borderTop: '1px solid var(--overlay-medium)',
   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-  backgroundColor: 'rgba(15, 23, 42, 0.4)', borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px'
+  backgroundColor: 'var(--overlay-heavy)', borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px'
 };
 
 const cancelBtnStyle = {
-  padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
+  padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--overlay-medium)',
   background: 'transparent', color: '#cbd5e1', cursor: 'pointer'
 };
 

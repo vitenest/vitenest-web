@@ -352,10 +352,10 @@ export default function AdminApps({ section }) {
                     onClick={() => iconInputRef.current?.click()}
                     style={{
                       width: '64px', height: '64px', borderRadius: '12px',
-                      border: '2px dashed rgba(255,255,255,0.15)',
+                      border: '2px dashed var(--overlay-medium)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       cursor: 'pointer', flexShrink: 0, overflow: 'hidden',
-                      background: 'rgba(255,255,255,0.03)', transition: 'border-color 0.2s'
+                      background: 'var(--overlay-light)', transition: 'border-color 0.2s'
                     }}
                     title="Click to upload icon"
                   >
@@ -495,9 +495,9 @@ export default function AdminApps({ section }) {
                     onClick={() => screenshotInputRef.current?.click()}
                     style={{
                       width: '80px', height: '80px', borderRadius: '12px',
-                      border: '2px dashed rgba(255,255,255,0.15)',
+                      border: '2px dashed var(--overlay-medium)',
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', background: 'rgba(255,255,255,0.03)', transition: 'border-color 0.2s',
+                      cursor: 'pointer', background: 'var(--overlay-light)', transition: 'border-color 0.2s',
                       color: '#cbd5e1', fontSize: '0.8rem', textAlign: 'center'
                     }}
                     title="Click to upload screenshot"
@@ -520,7 +520,7 @@ export default function AdminApps({ section }) {
                       style={{
                         width: '80px', height: '80px', borderRadius: '12px',
                         position: 'relative', overflow: 'hidden',
-                        border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)'
+                        border: '1px solid var(--overlay-medium)', background: 'var(--overlay-heavy)'
                       }}
                     >
                       <img src={imgUrl} alt={`Screenshot ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -550,7 +550,7 @@ export default function AdminApps({ section }) {
               </div>
 
               {/* Legal Pages Section */}
-              <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ marginTop: '24px', padding: '16px', background: 'var(--overlay-light)', borderRadius: '12px', border: '1px solid var(--overlay-medium)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: newApp.hasLegal ? '16px' : '0' }}>
                   <input
                     type="checkbox"
@@ -579,7 +579,7 @@ export default function AdminApps({ section }) {
                     </div>
 
                     {/* Terms of Service */}
-                    <div style={{ padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+                    <div style={{ padding: '16px', background: 'var(--overlay-heavy)', borderRadius: '8px' }}>
                       <h4 style={{ marginBottom: '12px', color: '#cbd5e1' }}>Terms of Service</h4>
                       <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
                         <div style={{ flex: 1 }}>
@@ -602,7 +602,7 @@ export default function AdminApps({ section }) {
                     </div>
 
                     {/* Privacy Policy */}
-                    <div style={{ padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+                    <div style={{ padding: '16px', background: 'var(--overlay-heavy)', borderRadius: '8px' }}>
                       <h4 style={{ marginBottom: '12px', color: '#cbd5e1' }}>Privacy Policy</h4>
                       <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
                         <div style={{ flex: 1 }}>

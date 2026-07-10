@@ -44,7 +44,7 @@ export default function AdminDashboard() {
         <div className={styles.statCard}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
             <span className={styles.statLabel}>Total Users</span>
-            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }}>
+            <div style={{ background: 'var(--overlay-light)', padding: '10px', borderRadius: '12px' }}>
               <Users size={24} color="#f8fafc" />
             </div>
           </div>

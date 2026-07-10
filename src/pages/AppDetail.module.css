@@ -94,7 +94,7 @@
   font-family: var(--font-display);
   font-size: 2.2rem;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--text-main);
   line-height: 1.1;
   letter-spacing: -0.5px;
 }
@@ -163,7 +163,7 @@
   font-size: 1.3rem;
   font-weight: 700;
   margin-bottom: 20px;
-  color: #e2e8f0;
+  color: var(--text-main);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -213,7 +213,7 @@
   border: 1px solid var(--glass-border);
   cursor: pointer;
   transition: all var(--transition-fast);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 20px var(--overlay-heavy);
 }
 
 .screenshot:hover {
@@ -256,7 +256,7 @@
 .legalCard h4 {
   font-size: 0.95rem;
   margin-bottom: 4px;
-  color: #e2e8f0;
+  color: var(--text-main);
 }
 
 .legalCard p {
@@ -279,7 +279,7 @@
   font-family: var(--font-display);
   font-size: 1.1rem;
   margin-bottom: 20px;
-  color: #e2e8f0;
+  color: var(--text-main);
   font-weight: 700;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--glass-border);
@@ -314,7 +314,7 @@
 .specValue {
   display: block;
   font-size: 0.95rem;
-  color: #e2e8f0;
+  color: var(--text-main);
   font-weight: 600;
 }
 
@@ -341,14 +341,14 @@
   max-width: 100%;
   max-height: 90vh;
   border-radius: 16px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7), 0 0 60px rgba(0, 212, 255, 0.1);
+  box-shadow: 0 30px 60px var(--overlay-heavy), 0 0 60px rgba(0, 212, 255, 0.1);
 }
 
 .lightboxClose {
   position: absolute;
   top: -48px;
   right: 0;
-  background: rgba(255,255,255,0.08);
+  background: var(--overlay-medium);
   color: white;
   border: 1px solid var(--glass-border);
   font-size: 1.5rem;
@@ -363,7 +363,7 @@
 }
 
 .lightboxClose:hover {
-  background: rgba(255,255,255,0.15);
+  background: var(--overlay-medium);
 }
 
 /* ── Loading / Error ─── */

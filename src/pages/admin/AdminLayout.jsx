@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { LayoutDashboard, Users, LogOut, Shield, Grid, Globe, Smartphone } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Shield, Grid, Globe, Smartphone, Sun, Moon } from 'lucide-react';
 import styles from './Admin.module.css';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function AdminLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     // Simple check for token existence. Real validation happens on API calls.
@@ -95,10 +97,14 @@ export default function AdminLayout() {
           </Link>
         </nav>
 
-        <div style={{ marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ padding: '0 16px', marginBottom: '16px', color: '#94a3b8', fontSize: '0.875rem' }}>
-            Logged in as <strong style={{color: '#f8fafc'}}>{username}</strong>
+        <div style={{ marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid var(--overlay-light)' }}>
+          <div style={{ padding: '0 16px', marginBottom: '16px', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+            Logged in as <strong style={{color: 'var(--text-main)'}}>{username}</strong>
           </div>
+          <button onClick={toggleTheme} className={styles.logoutBtn} style={{ marginBottom: '8px', color: 'var(--text-main)' }}>
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          </button>
           <button onClick={handleLogout} className={styles.logoutBtn}>
             <LogOut size={20} />
             Sign Out

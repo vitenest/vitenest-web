@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Hexagon } from 'lucide-react';
+import { Menu, X, Hexagon, Sun, Moon } from 'lucide-react';
 import styles from './Navbar.module.css';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,6 +48,9 @@ export default function Navbar() {
               {link.name}
             </Link>
           ))}
+          <button onClick={toggleTheme} className={styles.themeToggle} aria-label="Toggle theme">
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
           <Link to="/tools" className="btn-primary">Browse All Tools</Link>
         </nav>
 
@@ -70,7 +75,11 @@ export default function Navbar() {
             {link.name}
           </Link>
         ))}
-        <div className={styles.mobileNavAction}>
+        <div className={styles.mobileNavAction} style={{ flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+          <button onClick={toggleTheme} className={styles.themeToggle} style={{ display: 'flex', gap: '8px', alignItems: 'center' }} aria-label="Toggle theme">
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            <span>{theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+          </button>
           <Link to="/tools" className="btn-primary">Browse All Tools</Link>
         </div>
       </div>

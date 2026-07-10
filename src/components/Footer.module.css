@@ -73,7 +73,7 @@
 
 .socials a {
   color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-light);
   border: 1px solid var(--glass-border);
   padding: 10px;
   border-radius: 10px;
@@ -100,7 +100,7 @@
 
 .linksCol h3,
 .contactCol h3 {
-  color: #e2e8f0;
+  color: var(--text-main);
   font-size: 1rem;
   margin-bottom: 4px;
   font-weight: 700;

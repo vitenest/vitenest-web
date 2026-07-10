@@ -92,7 +92,7 @@
   font-size: 4.2rem;
   letter-spacing: -2px;
   margin-bottom: 24px;
-  color: #f1f5f9;
+  color: var(--text-main);
   font-weight: 800;
   line-height: 1.05;
 }
@@ -108,14 +108,14 @@
 .searchBar {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--overlay-light);
   border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: 50px;
   padding: 8px 8px 8px 24px;
   width: 100%;
   max-width: 620px;
   margin-bottom: 40px;
-  box-shadow: 0 0 40px rgba(0, 212, 255, 0.06), inset 0 1px 0 rgba(255,255,255,0.05);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.06), inset 0 1px 0 var(--overlay-light);
   transition: all var(--transition-fast);
 }
 
@@ -177,7 +177,7 @@
   padding: 48px 0;
   border-top: 1px solid var(--glass-border);
   border-bottom: 1px solid var(--glass-border);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--overlay-heavy);
 }
 
 .statsGrid {
@@ -219,7 +219,7 @@
   display: flex;
   flex-direction: column;
   border-radius: 20px;
-  background: rgba(255,255,255,0.03);
+  background: var(--overlay-light);
   border: 1px solid var(--glass-border);
   transition: all var(--transition-fast);
   cursor: pointer;
@@ -247,8 +247,8 @@
 
 .toolCard:hover {
   transform: translateY(-6px);
-  background: rgba(255,255,255,0.06);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4), 0 0 40px rgba(0,212,255,0.06);
+  background: var(--overlay-medium);
+  box-shadow: 0 20px 40px -10px var(--overlay-heavy), 0 0 40px rgba(0,212,255,0.06);
 }
 
 .toolCardInner {
@@ -305,7 +305,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #f1f5f9;
+  color: var(--text-main);
 }
 
 .toolCardBadge {
@@ -390,7 +390,7 @@
   transform: translateY(-4px);
   border-color: rgba(0, 212, 255, 0.3);
   background: rgba(0, 212, 255, 0.04);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 30px var(--overlay-heavy);
 }
 
 .catIconWrapper {
@@ -413,7 +413,7 @@
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 2px;
-  color: #e2e8f0;
+  color: var(--text-main);
 }
 
 .categoryCard p {
@@ -468,13 +468,13 @@
   align-items: center;
   padding: 40px 32px;
   border-radius: 20px;
-  background: rgba(255,255,255,0.02);
+  background: var(--overlay-light);
   border: 1px solid var(--glass-border);
   transition: all var(--transition-fast);
 }
 
 .benefitItem:hover {
-  background: rgba(255,255,255,0.04);
+  background: var(--overlay-light);
   border-color: rgba(0, 212, 255, 0.2);
   transform: translateY(-4px);
 }
@@ -560,7 +560,7 @@
 
 .faqQ h3 {
   font-size: 1.05rem;
-  color: #e2e8f0;
+  color: var(--text-main);
 }
 
 .faqQ svg {
@@ -628,7 +628,7 @@
   padding: 14px 24px;
   border-radius: 30px;
   border: 1px solid var(--glass-border);
-  background: rgba(255,255,255,0.05);
+  background: var(--overlay-light);
   font-size: 0.95rem;
 }
 
